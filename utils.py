@@ -21,7 +21,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 def compute_spectrogram(x, fs):
     """Compute the spectrogram of the signal."""
     f, t, Sxx = signal.spectrogram(x, fs)
-    return f, Sxx
+    return f, t, Sxx
 
 def compute_power_spectrum(y, fs):
     """Compute the power spectrum of the signal using Welch's method."""

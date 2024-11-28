@@ -157,8 +157,8 @@ def batch_process(input_folder, output_folder, tremor_type='postural', plot=Fals
 
 if __name__ == "__main__":
     # Define input and output directories
-    input_folder = "/home/visualdbs/Downloads/TestTremorModule/Data"
-    output_folder = "/home/visualdbs/Downloads/TestTremorModule/Output"
+    input_folder = "./Data"
+    output_folder = "./Output"
 
     # Call batch_process with desired parameters
     batch_process(

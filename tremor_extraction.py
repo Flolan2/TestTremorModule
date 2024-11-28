@@ -2,6 +2,7 @@
 
 from utils import compute_power_spectrum, compute_spectrogram, compute_hilbert_amplitude
 from preprocessing import preprocess_signal
+from plotting import plot_spectrogram, plot_power_spectrum #*
 
 def extract_tremor_features_from_signal(data, fs, tremor_type='postural', plot=False, save_plots=False, patient_id=None):
     """
@@ -20,13 +21,19 @@ def extract_tremor_features_from_signal(data, fs, tremor_type='postural', plot=F
     """
     # Preprocess the signal
     filtered = preprocess_signal(data, fs, remove_tv=(tremor_type == 'postural'))
-    
-    # Compute power spectrum
+
+    save_path = './plots/'
+    # Compute and plot power spectrum
     f_x, P_x = compute_power_spectrum(filtered, fs)
-    
-    # Compute spectrogram
-    f_spectrogram_x, Sxx_x = compute_spectrogram(filtered, fs)
-    
+    if plot:
+        plot_power_spectrum(frequencies=f_x, Pxx=P_x, tremor_type=tremor_type, patient_id=patient_id, save_path=save_path)
+
+    # Compute and plot spectrogram
+    f_spectrogram_x, t_x, Sxx_x = compute_spectrogram(filtered, fs)
+    if plot:
+        plot_spectrogram(frequencies=f_spectrogram_x, times=t_x, Sxx=Sxx_x, tremor_type=tremor_type, patient_id=patient_id, save_path=save_path)
+
+
     # Compute Hilbert transform for amplitude envelope
     amplitude_envelope_x = compute_hilbert_amplitude(filtered)
     
@@ -35,7 +42,7 @@ def extract_tremor_features_from_signal(data, fs, tremor_type='postural', plot=F
     # Hilbert features
     features['hilbert_max_amplitude'] = 2 * amplitude_envelope_x.max()
     features['hilbert_mean_amplitude'] = 2 * amplitude_envelope_x.mean()
-    
+
     # Spectrogram features
     mean_freq_x = f_spectrogram_x[Sxx_x.mean(axis=0).argmax()] 
     max_freq_x = f_spectrogram_x[Sxx_x.max(axis=0).argmax()]
@@ -50,33 +57,6 @@ def extract_tremor_features_from_signal(data, fs, tremor_type='postural', plot=F
     amplitude_x = P_x[dom_f_idx]
     features['power_spectral_dominant_frequency'] = dominant_frequency
     features['power_spectral_max_amplitude'] = 2 * amplitude_x
-    
-    # Plotting
-    if plot:
-        import matplotlib.pyplot as plt
-        plt.figure(figsize=(10, 4))
-        plt.plot(filtered, label='Filtered Signal')
-        
-        # Adjust plot title
-        if patient_id is not None:
-            plt.title(f"{tremor_type.capitalize()} Tremor - {patient_id}")
-        else:
-            plt.title(f"{tremor_type.capitalize()} Tremor")
-        
-        plt.xlabel('Sample')
-        plt.ylabel('Amplitude')
-        plt.legend()
-        
-        if save_plots:
-            import os
-            os.makedirs('./plots', exist_ok=True)
-            # Adjust filename to avoid issues when patient_id is None
-            if patient_id is not None:
-                filename = f'./plots/{tremor_type}_tremor_{patient_id}.svg'
-            else:
-                filename = f'./plots/{tremor_type}_tremor.svg'
-            plt.savefig(filename)
-        plt.close()
     
     return features
 
